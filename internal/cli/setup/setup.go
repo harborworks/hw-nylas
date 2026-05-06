@@ -10,7 +10,7 @@ func NewSetupCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "init",
-		Short: "Set up the Nylas CLI",
+		Short: "Set up the Harbor Works Nylas CLI",
 		Long: `Guided setup for first-time users.
 
 This wizard walks you through:
@@ -20,21 +20,21 @@ This wizard walks you through:
   4. Syncing existing email accounts
 
 Already have an API key? Skip the wizard:
-  nylas init --api-key <your-key>`,
+  hw-nylas init --api-key <your-key>`,
 		Example: `  # Interactive guided setup
-  nylas init
+  hw-nylas init
 
   # Quick setup with existing API key
-  nylas init --api-key nyl_abc123
+  hw-nylas init --api-key nyl_abc123
 
   # Quick setup for a specific application
-  nylas init --api-key nyl_abc123 --client-id app-123
+  hw-nylas init --api-key nyl_abc123 --client-id app-123
 
   # Quick setup with region
-  nylas init --api-key nyl_abc123 --region eu
+  hw-nylas init --api-key nyl_abc123 --region eu
 
   # Skip SSO provider menu
-  nylas init --google`,
+  hw-nylas init --google`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runWizard(opts)
 		},

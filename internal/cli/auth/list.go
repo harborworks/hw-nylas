@@ -29,6 +29,22 @@ func newListCmd() *cobra.Command {
 		Use:   "list",
 		Short: "List all authenticated accounts",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if grants, ok, err := common.ListHarborWorksGrants(); err != nil {
+				return err
+			} else if ok {
+				if len(grants) == 0 {
+					common.PrintEmptyState("accounts")
+					return nil
+				}
+				if common.IsStructuredOutput(cmd) {
+					out := common.GetOutputWriter(cmd)
+					return out.Write(grants)
+				}
+				verbose, _ := cmd.Root().PersistentFlags().GetBool("verbose")
+				renderHarborWorksGrantListTable(cmd.OutOrStdout(), grants, verbose)
+				return nil
+			}
+
 			grantSvc, _, err := createGrantService()
 			if err != nil {
 				return err
@@ -59,6 +75,51 @@ func newListCmd() *cobra.Command {
 
 			return nil
 		},
+	}
+}
+
+func renderHarborWorksGrantListTable(w io.Writer, grants []common.HarborWorksGrantStatus, verbose bool) {
+	headers := []grantListCell{
+		{raw: "GRANT ID", display: common.Bold.Sprint("GRANT ID")},
+		{raw: "EMAIL", display: common.Bold.Sprint("EMAIL")},
+		{raw: "ALIAS", display: common.Bold.Sprint("ALIAS")},
+		{raw: "PROVIDER", display: common.Bold.Sprint("PROVIDER")},
+		{raw: "STATUS", display: common.Bold.Sprint("STATUS")},
+		{raw: "DEFAULT", display: common.Bold.Sprint("DEFAULT")},
+	}
+	widths := []int{
+		authListGrantIDWidth,
+		authListEmailWidth,
+		8,
+		authListProviderWidth,
+		authListStatusWidth,
+		utf8.RuneCountInString(headers[5].raw),
+	}
+
+	rows := make([][]grantListCell, 0, len(grants))
+	for _, grant := range grants {
+		row := []grantListCell{
+			{raw: grant.ID, display: grant.ID},
+			{raw: grant.Email, display: grant.Email},
+			{raw: grant.Alias, display: grant.Alias},
+			{raw: grant.Provider.DisplayName(), display: grant.Provider.DisplayName()},
+			grantStatusCell(grant.Status),
+			defaultGrantCell(grant.IsDefault),
+		}
+		rows = append(rows, row)
+		for i, cell := range row {
+			if width := displayWidth(cell.raw); width > widths[i] {
+				widths[i] = width
+			}
+		}
+	}
+
+	renderGrantListRow(w, headers, widths)
+	for i, row := range rows {
+		renderGrantListRow(w, row, widths)
+		if verbose && grants[i].Status != "valid" {
+			_, _ = common.Dim.Fprintf(w, "    Status: %s\n", grants[i].Status)
+		}
 	}
 }
 

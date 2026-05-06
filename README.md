@@ -1,9 +1,11 @@
-# Nylas CLI
+# HW Nylas
 
 ![Go Version](https://img.shields.io/badge/Go-1.24-00ADD8?logo=go&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Release](https://img.shields.io/github/v/release/nylas/cli)
 [![Website](https://img.shields.io/badge/docs-cli.nylas.com-blue)](https://cli.nylas.com/)
+
+Harbor Works fork of the upstream Nylas CLI. See [HARBOR_WORKS.md](HARBOR_WORKS.md) for the fork direction.
 
 Email, calendar, and contacts from your terminal. One CLI for Google, Microsoft, and IMAP -- no SMTP config, no provider SDKs, no boilerplate.
 

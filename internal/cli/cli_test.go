@@ -110,8 +110,8 @@ func TestCommandDescriptions(t *testing.T) {
 func TestCommandUsage(t *testing.T) {
 	rootCmd := GetRootCmd()
 
-	if rootCmd.Use != "nylas" {
-		t.Errorf("Root command Use = %q, want %q", rootCmd.Use, "nylas")
+	if rootCmd.Use != "hw-nylas" {
+		t.Errorf("Root command Use = %q, want %q", rootCmd.Use, "hw-nylas")
 	}
 }
 

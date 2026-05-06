@@ -48,6 +48,15 @@ func GetNylasClient() (ports.NylasClient, error) {
 	clientID := os.Getenv("NYLAS_CLIENT_ID")
 	clientSecret := os.Getenv("NYLAS_CLIENT_SECRET")
 
+	if apiKey == "" {
+		if hwCreds, err := loadHarborWorksCredentials(); err == nil && hwCreds != nil {
+			c := nylas.NewHTTPClient()
+			c.SetBaseURL(hwCreds.NylasBaseURL())
+			c.SetCredentials("", "", hwCreds.Token)
+			return c, nil
+		}
+	}
+
 	// If API key not in env, try keyring/file store
 	if apiKey == "" {
 		secretStore, err := openSecretStore()
@@ -162,6 +171,12 @@ func GetGrantID(args []string) (string, error) {
 	if len(args) > 0 && args[0] != "" {
 		identifier := args[0]
 
+		if grantID, ok, err := getHarborWorksGrantID(identifier); err != nil {
+			return "", err
+		} else if ok {
+			return grantID, nil
+		}
+
 		// Direct grant IDs should not depend on local secret-store health.
 		if !containsAt(identifier) {
 			return identifier, nil
@@ -170,6 +185,12 @@ func GetGrantID(args []string) (string, error) {
 
 	// Check environment variable
 	if grantID := os.Getenv("NYLAS_GRANT_ID"); grantID != "" {
+		return grantID, nil
+	}
+
+	if grantID, ok, err := getHarborWorksGrantID(""); err != nil {
+		return "", err
+	} else if ok {
 		return grantID, nil
 	}
 

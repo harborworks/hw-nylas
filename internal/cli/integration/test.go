@@ -136,10 +136,14 @@ func init() {
 
 	// Try to find binary relative to test directory
 	candidates := []string{
-		"../../bin/nylas",    // From internal/cli
-		"../../../bin/nylas", // From internal/cli/subdir
-		"./bin/nylas",        // From project root
-		"bin/nylas",          // From project root
+		"../../bin/hw-nylas",    // From internal/cli
+		"../../../bin/hw-nylas", // From internal/cli/subdir
+		"./bin/hw-nylas",        // From project root
+		"bin/hw-nylas",          // From project root
+		"../../bin/nylas",       // Upstream fallback
+		"../../../bin/nylas",    // Upstream fallback
+		"./bin/nylas",           // Upstream fallback
+		"bin/nylas",             // Upstream fallback
 	}
 	for _, c := range candidates {
 		if _, err := os.Stat(c); err == nil {
