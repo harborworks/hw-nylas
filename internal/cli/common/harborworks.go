@@ -55,6 +55,52 @@ func loadHarborWorksCredentials() (*harborWorksCredentials, error) {
 	return &creds, nil
 }
 
+func harborWorksProfileName() string {
+	profile := strings.TrimSpace(os.Getenv("HW_PROFILE"))
+	if profile == "" {
+		return "default"
+	}
+	return profile
+}
+
+func harborWorksProfileSuggestions() []string {
+	profile := harborWorksProfileName()
+	statusCmd := "hw status"
+	if profile != "default" {
+		statusCmd = fmt.Sprintf("HW_PROFILE=%s hw status", profile)
+	}
+	suggestions := []string{
+		fmt.Sprintf("Check Harbor Works auth with: %s", statusCmd),
+		"Set the intended profile explicitly, for example: HW_PROFILE=local hw-nylas auth list",
+	}
+	if profile == "default" {
+		suggestions = append(suggestions, "Your local Nylas grants may be under another profile, such as HW_PROFILE=local")
+	}
+	return suggestions
+}
+
+func harborWorksProfileNotConfiguredError() error {
+	return &CLIError{
+		Message:     fmt.Sprintf("Harbor Works profile %q is not configured for hw-nylas", harborWorksProfileName()),
+		Suggestions: harborWorksProfileSuggestions(),
+		Code:        ErrCodeNotConfigured,
+	}
+}
+
+func harborWorksGrantLookupError(statusCode int, body string) error {
+	message := fmt.Sprintf("Could not load Harbor Works Nylas accounts for profile %q", harborWorksProfileName())
+	suggestions := harborWorksProfileSuggestions()
+	if statusCode == http.StatusUnauthorized || statusCode == http.StatusForbidden {
+		suggestions = append(suggestions, "Sign in again with: hw auth login")
+	}
+	return &CLIError{
+		Err:         fmt.Errorf("Harbor Works grant lookup failed (%d): %s", statusCode, body),
+		Message:     message,
+		Suggestions: suggestions,
+		Code:        ErrCodeAuthFailed,
+	}
+}
+
 func harborWorksCredentialsPath() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -88,8 +134,11 @@ func getHarborWorksGrantID(identifier string) (string, bool, error) {
 
 func ListHarborWorksGrants() ([]HarborWorksGrantStatus, bool, error) {
 	result, ok, err := listHarborWorksGrants("")
-	if err != nil || !ok {
+	if err != nil {
 		return nil, ok, err
+	}
+	if !ok {
+		return nil, false, harborWorksProfileNotConfiguredError()
 	}
 
 	grants := make([]HarborWorksGrantStatus, 0, len(result.Data))
@@ -155,7 +204,7 @@ func listHarborWorksGrants(identifier string) (*harborWorksGrantsResponse, bool,
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		body, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
-		return nil, true, fmt.Errorf("Harbor Works grant lookup failed (%d): %s", resp.StatusCode, strings.TrimSpace(string(body)))
+		return nil, true, harborWorksGrantLookupError(resp.StatusCode, strings.TrimSpace(string(body)))
 	}
 
 	var result harborWorksGrantsResponse
