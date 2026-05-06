@@ -11,15 +11,15 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:     "nylas",
-	Short:   "Nylas CLI - Email, calendar, and contacts from your terminal",
+	Use:     "hw-nylas",
+	Short:   "Harbor Works Nylas CLI - Email, calendar, and contacts from your terminal",
 	Version: Version,
 	Long: `Quick start:
-  nylas init             Guided setup (first time)
-  nylas email list       List recent emails
-  nylas calendar events  Upcoming events
-  nylas contacts list    List contacts
-  nylas commands --json  Machine-readable command tree
+  hw-nylas init             Guided setup (first time)
+  hw-nylas email list       List recent emails
+  hw-nylas calendar events  Upcoming events
+  hw-nylas contacts list    List contacts
+  hw-nylas commands --json  Machine-readable command tree
 
 Documentation: https://cli.nylas.com/`,
 	SilenceUsage:  true,
@@ -52,8 +52,8 @@ func printWelcome() {
 	fmt.Print("  ")
 	_, _ = common.Dim.Print("│")
 	fmt.Print("   ")
-	fmt.Print(common.Brand.Render("◈  N Y L A S   C L I"))
-	fmt.Print("                  ")
+	fmt.Print(common.Brand.Render("◈  H W   N Y L A S"))
+	fmt.Print("                   ")
 	_, _ = common.Dim.Println("│")
 	_, _ = common.Dim.Println("  │                                          │")
 	fmt.Print("  ")
@@ -72,10 +72,10 @@ func printWelcome() {
 	_, _ = common.Bold.Println("  Get started in under a minute:")
 	fmt.Println()
 	fmt.Print("    ")
-	fmt.Print(common.Brand.Render("❯ nylas init"))
+	fmt.Print(common.Brand.Render("❯ hw-nylas init"))
 	fmt.Println("                Guided setup")
 	fmt.Print("    ")
-	_, _ = common.Dim.Println("  nylas init --api-key      Quick setup with existing key")
+	_, _ = common.Dim.Println("  hw-nylas init --api-key   Quick setup with existing key")
 
 	// Capabilities box
 	fmt.Println()
@@ -94,10 +94,10 @@ func printWelcome() {
 	// Footer
 	fmt.Println()
 	fmt.Print("  ")
-	_, _ = common.Dim.Print("nylas --help")
+	_, _ = common.Dim.Print("hw-nylas --help")
 	fmt.Println("              All commands")
 	fmt.Print("  ")
-	_, _ = common.Dim.Print("nylas commands --json")
+	_, _ = common.Dim.Print("hw-nylas commands --json")
 	fmt.Println("     Machine-readable command tree")
 	fmt.Print("  ")
 	_, _ = common.Dim.Println("https://cli.nylas.com     Documentation")

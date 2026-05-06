@@ -33,13 +33,15 @@ VERSION ?= dev
 COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "none")
 BUILD_DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 LDFLAGS := -ldflags "-s -w -X github.com/nylas/cli/internal/version.Version=$(VERSION) -X github.com/nylas/cli/internal/version.Commit=$(COMMIT) -X github.com/nylas/cli/internal/version.BuildDate=$(BUILD_DATE)"
+BINARY_NAME ?= hw-nylas
+BINARY_PATH := $(CURDIR)/bin/$(BINARY_NAME)
 
 # ============================================================================
 # Build Targets
 # ============================================================================
 build:
 	@mkdir -p bin
-	go build $(LDFLAGS) -o bin/nylas ./cmd/nylas
+	go build $(LDFLAGS) -o bin/$(BINARY_NAME) ./cmd/nylas
 
 # ============================================================================
 # Code Quality Targets
@@ -132,13 +134,13 @@ test-integration:
 			NYLAS_DISABLE_KEYRING=true \
 			NYLAS_TEST_RATE_LIMIT_RPS=$(NYLAS_TEST_RATE_LIMIT_RPS) \
 			NYLAS_TEST_RATE_LIMIT_BURST=$(NYLAS_TEST_RATE_LIMIT_BURST) \
-			NYLAS_TEST_BINARY=$(CURDIR)/bin/nylas \
+			NYLAS_TEST_BINARY=$(BINARY_PATH) \
 			go test -tags=integration -v -timeout 10m -p 1 -skip TestCLI_Agent ./... 2>&1 | tee test-integration.txt; \
 		else \
 			NYLAS_DISABLE_KEYRING=true \
 			NYLAS_TEST_RATE_LIMIT_RPS=$(NYLAS_TEST_RATE_LIMIT_RPS) \
 			NYLAS_TEST_RATE_LIMIT_BURST=$(NYLAS_TEST_RATE_LIMIT_BURST) \
-			NYLAS_TEST_BINARY=$(CURDIR)/bin/nylas \
+			NYLAS_TEST_BINARY=$(BINARY_PATH) \
 			go test -tags=integration -v -timeout 10m -p 1 ./... 2>&1 | tee test-integration.txt; \
 		fi \
 	'
@@ -152,7 +154,7 @@ test-integration-fast:
 	@bash -o pipefail -c '\
 		NYLAS_TEST_RATE_LIMIT_RPS=$(NYLAS_TEST_RATE_LIMIT_RPS) \
 		NYLAS_TEST_RATE_LIMIT_BURST=$(NYLAS_TEST_RATE_LIMIT_BURST) \
-		NYLAS_TEST_BINARY=$(CURDIR)/bin/nylas \
+		NYLAS_TEST_BINARY=$(BINARY_PATH) \
 		go test ./internal/cli/integration/... -tags=integration -v -timeout 2m -p 1 \
 			-run "TestCLI_Admin|TestCLI_Timezone|TestCLI_AIConfig|TestCLI_AIProvider|TestCLI_CalendarAI_Basic|TestCLI_CalendarAI_Adapt|TestCLI_CalendarAI_Analyze_Respects|TestCLI_CalendarAI_Analyze_Default|TestCLI_CalendarAI_Analyze_Disabled|TestCLI_CalendarAI_Analyze_Focus|TestCLI_CalendarAI_Analyze_With" \
 	'
@@ -166,7 +168,7 @@ test-cli-regressions: build
 	NYLAS_DISABLE_KEYRING=true \
 	NYLAS_TEST_RATE_LIMIT_RPS=$(NYLAS_TEST_RATE_LIMIT_RPS) \
 	NYLAS_TEST_RATE_LIMIT_BURST=$(NYLAS_TEST_RATE_LIMIT_BURST) \
-	NYLAS_TEST_BINARY=$(CURDIR)/bin/nylas \
+	NYLAS_TEST_BINARY=$(BINARY_PATH) \
 	go test ./internal/cli/integration/... -tags=integration -v -timeout 10m -p 1 \
 		-run 'TestCLI_(InboundRemoved|InboxAliasRemoved|HelpOmitsInbound|AuthLoginRejectsInboxProvider|ConnectorSurfaces_HideInboxProvider|AdminConnectorsCreate_RejectsInboxProvider|AdminConnectorsShow_HidesInboxProvider|EmailSendValidationShowsFormattedSuggestion)$$'
 	@echo "✓ CLI regression checks passed"
@@ -181,7 +183,7 @@ test-integration-agent: build
 	NYLAS_DISABLE_KEYRING=true \
 	NYLAS_TEST_RATE_LIMIT_RPS=$(NYLAS_TEST_RATE_LIMIT_RPS) \
 	NYLAS_TEST_RATE_LIMIT_BURST=$(NYLAS_TEST_RATE_LIMIT_BURST) \
-	NYLAS_TEST_BINARY=$(CURDIR)/bin/nylas \
+	NYLAS_TEST_BINARY=$(BINARY_PATH) \
 	go test ./internal/cli/integration/... -tags=integration -v -timeout 10m -p 1 \
 		-run 'TestCLI_Agent.*$$'
 	@echo "✓ Agent integration checks passed"
@@ -422,8 +424,8 @@ clean-cache:
 
 install: build
 	@echo "=== Installing binary to GOPATH/bin ==="
-	cp bin/nylas $(GOPATH)/bin/nylas
-	@echo "✓ Installed to $(GOPATH)/bin/nylas"
+	cp bin/$(BINARY_NAME) $(GOPATH)/bin/$(BINARY_NAME)
+	@echo "✓ Installed to $(GOPATH)/bin/$(BINARY_NAME)"
 
 deps:
 	@echo "=== Updating dependencies ==="
@@ -439,7 +441,7 @@ test-pkg:
 
 # Quick build and run
 run: build
-	./bin/nylas $(ARGS)
+	./bin/$(BINARY_NAME) $(ARGS)
 
 # ============================================================================
 # Help
