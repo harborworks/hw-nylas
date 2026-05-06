@@ -35,6 +35,7 @@ BUILD_DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 LDFLAGS := -ldflags "-s -w -X github.com/nylas/cli/internal/version.Version=$(VERSION) -X github.com/nylas/cli/internal/version.Commit=$(COMMIT) -X github.com/nylas/cli/internal/version.BuildDate=$(BUILD_DATE)"
 BINARY_NAME ?= hw-nylas
 BINARY_PATH := $(CURDIR)/bin/$(BINARY_NAME)
+GO_BIN ?= $(shell go env GOPATH)/bin
 
 # ============================================================================
 # Build Targets
@@ -424,8 +425,9 @@ clean-cache:
 
 install: build
 	@echo "=== Installing binary to GOPATH/bin ==="
-	cp bin/$(BINARY_NAME) $(GOPATH)/bin/$(BINARY_NAME)
-	@echo "✓ Installed to $(GOPATH)/bin/$(BINARY_NAME)"
+	@mkdir -p $(GO_BIN)
+	cp bin/$(BINARY_NAME) $(GO_BIN)/$(BINARY_NAME)
+	@echo "✓ Installed to $(GO_BIN)/$(BINARY_NAME)"
 
 deps:
 	@echo "=== Updating dependencies ==="
